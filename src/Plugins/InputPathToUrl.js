@@ -83,7 +83,7 @@ function FilterPlugin(eleventyConfig) {
 		contentMap = inputPathToUrl;
 	});
 
-	eleventyConfig.addFilter("inputPathToUrl", function (targetFilePath) {
+	eleventyConfig.addFilter("inputPathToUrl", function (targetFilePath, paginatedItem) {
 		if (!contentMap) {
 			throw new Error("Internal error: contentMap not available for `inputPathToUrl` filter.");
 		}
@@ -103,6 +103,13 @@ function FilterPlugin(eleventyConfig) {
 			throw new Error(
 				"`inputPathToUrl` filter could not find a matching target for " + targetFilePath,
 			);
+		} else if (urls.length > 1 && paginatedItem) {
+			// if the user specifies a paginated item that we can match against one
+			// of the generated URLs, pick that URL to render
+			let matchingUrlIndex = urls.findIndex(url => url.includes(paginatedItem));
+			if (matchingUrlIndex !== -1) {
+				return `${urls[matchingUrlIndex]}${suffix}`;
+			}
 		}
 
 		return `${urls[0]}${suffix}`;
